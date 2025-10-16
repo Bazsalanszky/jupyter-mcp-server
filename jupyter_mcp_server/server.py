@@ -277,12 +277,15 @@ async def assign_kernel_to_notebook(
 @mcp.tool()
 async def use_notebook(
     notebook_name: Annotated[str, Field(description="Unique identifier for the notebook")],
-    notebook_path: Annotated[str, Field(description="Path to the notebook file, relative to the Jupyter server root (e.g. 'notebook.ipynb'). If is empty, switches to an already-connected notebook with the given name.")] = None,
+    notebook_path: Annotated[str, Field(description="Path to the notebook file, relative to the Jupyter server root (e.g. 'notebook.ipynb'). If is empty, switches to an already-connected notebook with the given name.")] = "",
     mode: Annotated[Literal["connect", "create"], Field(description="Mode to use for the notebook. 'connect' to connect to existing, 'create' to create new")] = "connect",
-    kernel_id: Annotated[str, Field(description="Specific kernel ID to use (will create new if is empty)")] = None,
+    kernel_id: Annotated[str, Field(description="Specific kernel ID to use (will create new if is empty)")] = "",
 ) -> Annotated[str, Field(description="Success message with notebook information")]:
     """Use a notebook file (connect to existing or create new, or switch to already-connected notebook)."""
     config = get_config()
+    notebook_path = None if notebook_path == "" else notebook_path  # Normalize empty string to None
+    kernel_id = None if kernel_id == "" else kernel_id  # Normalize empty string to None
+
     return await safe_notebook_operation(
         lambda: UseNotebookTool().execute(
             mode=server_context.mode,
